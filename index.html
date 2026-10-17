@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドラクエ10 調理職人 注文フォーム</title>
+    <style>
+        :root {
+            --bg-color: #f2f7f4;
+            --card-bg: #ffffff;
+            --border-color: #c3d7ca;
+            --primary-green: #4a7c59;
+            --primary-hover: #3b6347;
+            --accent-gold: #c69214;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --input-bg: #f8faf9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px 16px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        header {
+            text-align: center;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.08);
+        }
+
+        header h1 {
+            color: var(--primary-green);
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .sub-text {
+            display: block;
+            font-size: 0.78rem;
+            color: #b35959;
+            font-weight: normal;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15);
+        }
+
+        .radio-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .radio-card {
+            position: relative;
+        }
+
+        .radio-card input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-align: center;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 52px;
+        }
+
+        .radio-card input:checked + .radio-label {
+            background: var(--primary-green);
+            color: #ffffff;
+            border-color: var(--primary-green);
+            box-shadow: 0 2px 8px rgba(74, 124, 89, 0.3);
+        }
+
+        .qty-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-hover) 100%);
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.05rem;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(74, 124, 89, 0.25);
+            margin-top: 10px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-submit:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-green);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🍳 料理注文フォーム</h1>
+        <p>ドラクエ10 チーム専用 発注受付</p>
+    </header>
+
+    <form id="orderForm" onsubmit="submitOrder(event)">
+        <div class="card">
+            <div class="form-group">
+                <label for="custName">キャラクター名</label>
+                <input type="text" id="custName" class="form-control" placeholder="例: もちくん" required>
+            </div>
+
+            <div class="form-group">
+                <label for="deliveryDate">希望納品日</label>
+                <span class="sub-text">(リアルの状況により納品が遅れることがございます。予めご了承下さい。)</span>
+                <input type="date" id="deliveryDate" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label>料理の種類</label>
+                <div class="radio-grid">
+                    <div class="radio-card">
+                        <input type="radio" id="f1" name="selectedFood" value="バランスパスタ" checked>
+                        <label for="f1" class="radio-label">バランスパスタ</label>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" id="f2" name="selectedFood" value="バトルステーキ">
+                        <label for="f2" class="radio-label">バトルステーキ</label>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" id="f3" name="selectedFood" value="クイックケーキ">
+                        <label for="f3" class="radio-label">クイックケーキ</label>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" id="f4" name="selectedFood" value="きようさ肉まん">
+                        <label for="f4" class="radio-label">きようさ肉まん</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>個数</label>
+                <div class="qty-grid">
+                    <div class="radio-card">
+                        <input type="radio" id="q1" name="quantity" value="1" checked>
+                        <label for="q1" class="radio-label">1 個</label>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" id="q2" name="quantity" value="2">
+                        <label for="q2" class="radio-label">2 個</label>
+                    </div>
+                    <div class="radio-card">
+                        <input type="radio" id="q3" name="quantity" value="3">
+                        <label for="q3" class="radio-label">3 個</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">注文を送信する</button>
+        </div>
+    </form>
+</div>
+
+<div class="toast" id="toast">注文を送信しました！</div>
+
+<script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzNW31i59jNEv1QxqiPUjyIOli5kfSg4O97XvRq8aSvdupQaJjuaDmPEr6b83f6UzRCpQ/exec";
+
+    function init() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('deliveryDate').value = today;
+    }
+
+    async function submitOrder(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('submitBtn');
+        const name = document.getElementById('custName').value.trim();
+        const date = document.getElementById('deliveryDate').value;
+        const food = document.querySelector('input[name="selectedFood"]:checked')?.value;
+        const qty = document.querySelector('input[name="quantity"]:checked')?.value;
+
+        if (!name || !date || !food || !qty) return;
+
+        btn.disabled = true;
+        btn.textContent = "送信中...";
+
+        const payload = { name, date, food, qty };
+
+        try {
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            showToast('注文を送信しました！');
+            document.getElementById('custName').value = '';
+        } catch (error) {
+            alert('送信に失敗しました。時間をおいて再度お試しください。');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "注文を送信する";
+        }
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    init();
+</script>
+</body>
+</html>
