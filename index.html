@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ドラクエ10 調理職人 注文フォーム</title>
+    <title>緑の小悪魔もちくんの料理注文サイト</title>
     <style>
         :root {
             --bg-color: #f2f7f4;
@@ -15,6 +15,8 @@
             --text-main: #2d3748;
             --text-muted: #718096;
             --input-bg: #f8faf9;
+            --danger-text: #b35959;
+            --warning-text: #d97706;
         }
 
         * {
@@ -51,7 +53,7 @@
 
         header h1 {
             color: var(--primary-green);
-            font-size: 1.4rem;
+            font-size: 1.25rem;
             margin-bottom: 6px;
         }
 
@@ -83,10 +85,10 @@
         .sub-text {
             display: block;
             font-size: 0.78rem;
-            color: #b35959;
+            color: var(--danger-text);
             font-weight: normal;
             margin-bottom: 8px;
-            line-height: 1.3;
+            line-height: 1.35;
         }
 
         .form-control {
@@ -106,51 +108,118 @@
             box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15);
         }
 
-        .radio-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .food-list {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
 
-        .radio-card {
-            position: relative;
+        .food-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
         }
 
-        .radio-card input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .food-name-area {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .radio-label {
+        .food-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .counter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-counter {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 8px;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            user-select: none;
+            transition: all 0.1s;
+        }
+
+        .btn-counter:active {
+            background: var(--border-color);
+        }
+
+        .btn-counter:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .count-display {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            width: 20px;
             text-align: center;
-            color: var(--text-main);
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 52px;
         }
 
-        .radio-card input:checked + .radio-label {
-            background: var(--primary-green);
-            color: #ffffff;
-            border-color: var(--primary-green);
-            box-shadow: 0 2px 8px rgba(74, 124, 89, 0.3);
+        .status-badge {
+            font-size: 0.72rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 72px;
         }
 
-        .qty-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        .status-order {
+            background: #fdf2f2;
+            color: var(--danger-text);
+            border: 1px solid #f5c6c6;
+        }
+
+        .status-low {
+            background: #fef8e7;
+            color: var(--warning-text);
+            border: 1px solid #fce8b2;
+        }
+
+        .status-in {
+            background: #eef5ef;
+            color: var(--primary-green);
+            border: 1px solid #c3d7ca;
+        }
+
+        .cart-summary {
+            background: var(--input-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.88rem;
+        }
+
+        .cart-summary-title {
+            font-weight: bold;
+            color: var(--primary-green);
+            margin-bottom: 6px;
         }
 
         .btn-submit {
@@ -164,13 +233,14 @@
             border-radius: 10px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(74, 124, 89, 0.25);
-            margin-top: 10px;
+            margin-top: 15px;
             transition: transform 0.1s, opacity 0.2s;
         }
 
         .btn-submit:disabled {
             background: #a0aec0;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .toast {
@@ -193,64 +263,39 @@
 
 <div class="container">
     <header>
-        <h1>🍳 料理注文フォーム</h1>
-        <p>ドラクエ10 チーム専用 発注受付</p>
+        <h1>🍳 緑の小悪魔もちくんの料理注文サイト</h1>
+        <p>ドラクエ10 調理職人 発注受付</p>
     </header>
 
     <form id="orderForm" onsubmit="submitOrder(event)">
         <div class="card">
-            <div class="form-group">
+            <span class="sub-text">※ご注文後のキャンセルはできません。キャンセルの際は直接お申し付け下さい。</span>
+
+            <div class="form-group" style="margin-top: 12px;">
                 <label for="custName">キャラクター名</label>
                 <input type="text" id="custName" class="form-control" placeholder="例: もちくん" required>
             </div>
 
             <div class="form-group">
                 <label for="deliveryDate">希望納品日</label>
-                <span class="sub-text">(リアルの状況により納品が遅れることがございます。予めご了承下さい。)</span>
+                <span class="sub-text" style="color:var(--text-muted);">(リアルの状況により納品が遅れることがございます。予めご了承下さい。)</span>
                 <input type="date" id="deliveryDate" class="form-control" required>
             </div>
 
             <div class="form-group">
-                <label>料理の種類</label>
-                <div class="radio-grid">
-                    <div class="radio-card">
-                        <input type="radio" id="f1" name="selectedFood" value="バランスパスタ" checked>
-                        <label for="f1" class="radio-label">バランスパスタ</label>
-                    </div>
-                    <div class="radio-card">
-                        <input type="radio" id="f2" name="selectedFood" value="バトルステーキ">
-                        <label for="f2" class="radio-label">バトルステーキ</label>
-                    </div>
-                    <div class="radio-card">
-                        <input type="radio" id="f3" name="selectedFood" value="クイックケーキ">
-                        <label for="f3" class="radio-label">クイックケーキ</label>
-                    </div>
-                    <div class="radio-card">
-                        <input type="radio" id="f4" name="selectedFood" value="きようさ肉まん">
-                        <label for="f4" class="radio-label">きようさ肉まん</label>
-                    </div>
+                <label>料理の選択</label>
+                <span class="sub-text" style="color:var(--text-muted); margin-bottom: 8px;">(※1種類につき3個まで)</span>
+                <div class="food-list" id="foodListContainer">
+                    <!-- JSで描画 -->
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>個数</label>
-                <div class="qty-grid">
-                    <div class="radio-card">
-                        <input type="radio" id="q1" name="quantity" value="1" checked>
-                        <label for="q1" class="radio-label">1 個</label>
-                    </div>
-                    <div class="radio-card">
-                        <input type="radio" id="q2" name="quantity" value="2">
-                        <label for="q2" class="radio-label">2 個</label>
-                    </div>
-                    <div class="radio-card">
-                        <input type="radio" id="q3" name="quantity" value="3">
-                        <label for="q3" class="radio-label">3 個</label>
-                    </div>
-                </div>
+            <div class="cart-summary" id="cartSummary" style="display:none;">
+                <div class="cart-summary-title">🛒 選択中の注文内容</div>
+                <div id="cartSummaryText"></div>
             </div>
 
-            <button type="submit" class="btn-submit" id="submitBtn">注文を送信する</button>
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>料理を選択してください</button>
         </div>
     </form>
 </div>
@@ -259,10 +304,110 @@
 
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzNW31i59jNEv1QxqiPUjyIOli5kfSg4O97XvRq8aSvdupQaJjuaDmPEr6b83f6UzRCpQ/exec";
+    const DEFAULT_FOODS = ["バランスパスタ", "バトルステーキ", "クイックケーキ", "きようさ肉まん"];
+    
+    let cart = {
+        "バランスパスタ": 0,
+        "バトルステーキ": 0,
+        "クイックケーキ": 0,
+        "きようさ肉まん": 0
+    };
 
-    function init() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('deliveryDate').value = today;
+    async function init() {
+        const now = new Date();
+        if (now.getHours() >= 21) {
+            now.setDate(now.getDate() + 1);
+        }
+        document.getElementById('deliveryDate').value = now.toISOString().split('T')[0];
+
+        await loadStockAndRender();
+    }
+
+    async function loadStockAndRender() {
+        const container = document.getElementById('foodListContainer');
+        try {
+            const res = await fetch(GAS_URL);
+            const data = await res.json();
+            const stocks = data.stocks || {};
+
+            container.innerHTML = DEFAULT_FOODS.map(food => {
+                const stock = stocks[food] !== undefined ? stocks[food] : 0;
+                const currentQty = cart[food] || 0;
+
+                // 在庫数の判定ロジック（0:受注生産 / 1〜3:在庫少 / 4〜:在庫有）
+                let statusHtml = '';
+                if (stock === 0) {
+                    statusHtml = '<span class="status-badge status-order">受注生産</span>';
+                } else if (stock <= 3) {
+                    statusHtml = `<span class="status-badge status-low">在庫少 (${stock})</span>`;
+                } else {
+                    statusHtml = `<span class="status-badge status-in">在庫有 (${stock})</span>`;
+                }
+
+                return `
+                    <div class="food-row">
+                        <div class="counter-group">
+                            <button type="button" class="btn-counter" onclick="changeQty('${food}', -1)" ${currentQty === 0 ? 'disabled' : ''}>ー</button>
+                            <span class="count-display" id="count_${food}">${currentQty}</span>
+                        </div>
+                        <div class="food-name-area">
+                            <span class="food-name">${food}</span>
+                        </div>
+                        <div class="counter-group">
+                            <button type="button" class="btn-counter" onclick="changeQty('${food}', 1)" ${currentQty >= 3 ? 'disabled' : ''}>＋</button>
+                        </div>
+                        <div>
+                            ${statusHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            container.innerHTML = DEFAULT_FOODS.map(food => `
+                <div class="food-row">
+                    <div class="counter-group">
+                        <button type="button" class="btn-counter" onclick="changeQty('${food}', -1)">ー</button>
+                        <span class="count-display" id="count_${food}">${cart[food]}</span>
+                    </div>
+                    <div class="food-name-area"><span class="food-name">${food}</span></div>
+                    <div class="counter-group">
+                        <button type="button" class="btn-counter" onclick="changeQty('${food}', 1)">＋</button>
+                    </div>
+                    <div><span class="status-badge status-order">読込中</span></div>
+                </div>
+            `).join('');
+        }
+        updateCartDisplay();
+    }
+
+    function changeQty(food, delta) {
+        const current = cart[food] || 0;
+        const next = Math.min(3, Math.max(0, current + delta));
+        cart[food] = next;
+
+        document.getElementById(`count_${food}`).textContent = next;
+        loadStockAndRender();
+    }
+
+    function updateCartDisplay() {
+        const summaryBox = document.getElementById('cartSummary');
+        const summaryText = document.getElementById('cartSummaryText');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const selectedItems = Object.keys(cart).filter(f => cart[f] > 0);
+
+        if (selectedItems.length === 0) {
+            summaryBox.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '料理を選択してください';
+        } else {
+            summaryBox.style.display = 'block';
+            summaryText.innerHTML = selectedItems.map(f => `<div>・${f} × <strong>${cart[f]}個</strong></div>`).join('');
+            
+            const totalQty = selectedItems.reduce((sum, f) => sum + cart[f], 0);
+            submitBtn.disabled = false;
+            submitBtn.textContent = `合計 ${totalQty}個 の注文を送信する`;
+        }
     }
 
     async function submitOrder(e) {
@@ -271,15 +416,17 @@
         const btn = document.getElementById('submitBtn');
         const name = document.getElementById('custName').value.trim();
         const date = document.getElementById('deliveryDate').value;
-        const food = document.querySelector('input[name="selectedFood"]:checked')?.value;
-        const qty = document.querySelector('input[name="quantity"]:checked')?.value;
 
-        if (!name || !date || !food || !qty) return;
+        const items = Object.keys(cart)
+            .filter(food => cart[food] > 0)
+            .map(food => ({ food: food, qty: cart[food] }));
+
+        if (!name || !date || items.length === 0) return;
 
         btn.disabled = true;
         btn.textContent = "送信中...";
 
-        const payload = { name, date, food, qty };
+        const payload = { name, date, items };
 
         try {
             await fetch(GAS_URL, {
@@ -291,11 +438,13 @@
 
             showToast('注文を送信しました！');
             document.getElementById('custName').value = '';
+            
+            DEFAULT_FOODS.forEach(f => cart[f] = 0);
+            loadStockAndRender();
         } catch (error) {
             alert('送信に失敗しました。時間をおいて再度お試しください。');
         } finally {
             btn.disabled = false;
-            btn.textContent = "注文を送信する";
         }
     }
 
